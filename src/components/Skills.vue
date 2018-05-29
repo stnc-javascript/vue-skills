@@ -1,13 +1,18 @@
 <template>
   <div class="hello">
-    <div :class="alertObject">
-      <h1>{{ message }}</h1>
-      <button @click.prevent="changeName" :disabled="btnState">Some text</button>
+    <div class="holder">
+      <form action="#" @submit.prevent="createSkill">
+        <input type="text" placeholder="Enter a skill you possess" v-model="skill" v-validate="'min:5'" name="skill">
+        <transition name="alert-in" enter-active-class="animated flipInX" leave-active-class="animated flipOutX">
+          <p class="alert" v-if="errors.has('skill')">{{ errors.first('skill') }}</p>
+        </transition>
+      </form>
       <ul>
-        <li v-for="(skill, index) in skills" :key="index">{{ skill.name }} is at index {{ index }}</li>
+        <transition-group name="list" enter-active-class="animated bounceInUp" leave-active-class="animated bounceOutDown">
+          <li v-for="(skill, index) in skills" :key="index">{{ skill.name }} <i class="fa fa-minus-circle" @click.prevent="removeItem(index)"></i></li>
+        </transition-group>
       </ul>
-      <p v-if="skills.length >= 1">You have more than one skill</p>
-      <p v-else>You need to amass more skills</p>
+      <p>These are the skills you possess</p>
     </div>
   </div>
 </template>
@@ -17,21 +22,96 @@ export default {
   name: 'Skills',
   data () {
     return {
+      skill: '',
       skills: [
         { name: "Javeling" },
         { name: "Plumbing" },
-      ],
-      message: "Some text goes in here",
-      alertObject: {
-        alert: true
-      }
-
+      ]
     }
   },
+  methods: {
+    createSkill() {
+      this.$validator.validateAll().then((result) => {
+        if (result) {
+          this.skills.push({name: this.skill})
+          this.skill = ''
+        } else {
+          console.log('Not valid');
+        }
+      })
+
+    },
+    removeItem(index) {
+      this.skills.splice(index, 1)
+    }
+
+  }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style src="./styles/skills.css" scoped>
+<style scoped>
+  @import "https://cdn.jsdelivr.net/npm/animate.css@3.5.1";
+  @import "https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css";
+    .holder {
+      background: #fff;
+    }
+    ul {
+      margin: 0;
+      padding: 0;
+      list-style-type: none;
+    }
 
+    ul li {
+      padding: 20px;
+      font-size: 1.3em;
+      background-color: #E0EDF4;
+      border-left: 5px solid #3EB3F6;
+      margin-bottom: 2px;
+      color: #3E5252;
+    }
+    p {
+      text-align:center;
+      padding: 30px 0;
+      color: gray;
+    }
+    .container {
+      box-shadow: 0px 0px 40px lightgray;
+    }
+    input {
+      width: calc(100% - 40px);
+      border: 0;
+      padding: 20px;
+      font-size: 1.3em;
+      background-color: #323333;
+      color: #687F7F;
+    }
+    .alert {
+      background: #fdf2ce;
+      font-weight: bold;
+      display: inline-block;
+      padding: 5px;
+      margin-top: -20px;
+    }
+    .alert-in-enter-active {
+      animation: bounce-in .5s;
+    }
+    .alert-in-leave-active {
+      animation: bounce-in .5s reverse;
+    }
+  @keyframes bounce-in {
+    0% {
+      transform: scale(0);
+    }
+    50% {
+      transform: scale(1.5);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  i {
+    float:right;
+    cursor:pointer;
+  }
 </style>
